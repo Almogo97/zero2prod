@@ -1,4 +1,8 @@
-use axum::{http::StatusCode, routing::get, Router};
+use axum::{
+    http::StatusCode,
+    routing::{get, post},
+    Form, Router,
+};
 
 pub async fn run(port: &str) {
     let app = app();
@@ -11,7 +15,9 @@ pub async fn serve(app: Router, listener: tokio::net::TcpListener) {
 }
 
 pub fn app() -> Router {
-    Router::new().route("/health", get(health_check))
+    Router::new()
+        .route("/health", get(health_check))
+        .route("/subscriptions", post(subscribe))
 }
 
 pub async fn listener(port: &str) -> tokio::net::TcpListener {
@@ -21,4 +27,14 @@ pub async fn listener(port: &str) -> tokio::net::TcpListener {
 
 async fn health_check() -> StatusCode {
     StatusCode::OK
+}
+
+async fn subscribe(Form(payload): Form<FormData>) -> StatusCode {
+    StatusCode::OK
+}
+
+#[derive(serde::Deserialize)]
+struct FormData {
+    email: String,
+    name: String,
 }
