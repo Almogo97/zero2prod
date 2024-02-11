@@ -28,6 +28,12 @@ Explain macros
 cargo install cargo-expand
 ```
 
+SQLx CLI
+
+```bash
+cargo install sqlx-cli --no-default-features --features postgres
+```
+
 # User stories
 
 
