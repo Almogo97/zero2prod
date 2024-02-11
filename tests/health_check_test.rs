@@ -40,10 +40,10 @@ async fn subscribe_returns_400_when_missing_data(
 }
 
 async fn start_server() -> String {
-    let app = zero2prod::app();
-    let listener = zero2prod::listener("0").await; // Random available port
+    let app = zero2prod::startup::app();
+    let listener = zero2prod::startup::listener("0").await; // Random available port
     let port = listener.local_addr().unwrap().port();
-    let server = zero2prod::serve(app, listener);
+    let server = zero2prod::startup::serve(app, listener);
     tokio::spawn(server);
     format!("http://0.0.0.0:{}", port)
 }
