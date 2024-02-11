@@ -1,4 +1,8 @@
-use rstest::{fixture, rstest};
+use std::thread;
+
+use rstest::*;
+use sqlx::{Connection, PgConnection, PgPool};
+use zero2prod::{configuration, startup};
 
 #[rstest]
 #[awt]
@@ -13,7 +17,7 @@ async fn health_check_returns_200(#[future] client: TestClient) {
 #[rstest]
 #[awt]
 #[tokio::test]
-async fn subscribe_returns_200(#[future] client: TestClient) {
+async fn subscribe_returns_200(#[future] client: TestClient, #[future] db: PgPool) {
     let response = client
         .post(
             "/subscriptions",
@@ -22,6 +26,11 @@ async fn subscribe_returns_200(#[future] client: TestClient) {
         .await;
 
     assert_status_code(200, response);
+
+    let saved = sqlx::query("SELECT email, name FROM subscriptions")
+        .fetch_one(&db)
+        .await
+        .expect("Failed to fetch saved subscription");
 }
 
 #[rstest]
@@ -39,11 +48,11 @@ async fn subscribe_returns_400_when_missing_data(
     assert_status_code(422, response);
 }
 
-async fn start_server() -> String {
-    let app = zero2prod::startup::app();
-    let listener = zero2prod::startup::listener(0).await; // Random available port
+async fn start_server(db: PgPool) -> String {
+    let app = startup::app(db).await;
+    let listener = startup::listener(0).await; // Random available port
     let port = listener.local_addr().unwrap().port();
-    let server = zero2prod::startup::serve(app, listener);
+    let server = startup::serve(app, listener);
     tokio::spawn(server);
     format!("http://0.0.0.0:{}", port)
 }
@@ -94,7 +103,14 @@ impl TestClient {
 }
 
 #[fixture]
-async fn client() -> TestClient {
-    let address = start_server().await;
+async fn db() -> PgPool {
+    let configuration = configuration::get_configuration().expect("Failed to read configuration");
+    startup::create_db_pool(&configuration.database).await
+}
+
+#[fixture]
+#[awt]
+async fn client(#[future] db: PgPool) -> TestClient {
+    let address = start_server(db).await;
     TestClient::new(address)
 }
