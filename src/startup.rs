@@ -5,7 +5,7 @@ use axum::{
 
 use crate::routes;
 
-pub async fn run(port: &str) {
+pub async fn run(port: u16) {
     let app = app();
     let listener = listener(port).await;
     serve(app, listener).await
@@ -17,7 +17,7 @@ pub fn app() -> Router {
         .route("/subscriptions", post(routes::subscriptions::subscribe))
 }
 
-pub async fn listener(port: &str) -> tokio::net::TcpListener {
+pub async fn listener(port: u16) -> tokio::net::TcpListener {
     let address = format!("0.0.0.0:{}", port);
     tokio::net::TcpListener::bind(address).await.unwrap()
 }
