@@ -1,7 +1,8 @@
 use std::thread;
 
 use rstest::*;
-use sqlx::{Connection, PgConnection, PgPool};
+use sqlx::{Connection, Executor, PgConnection, PgPool};
+use uuid::Uuid;
 use zero2prod::{configuration, startup};
 
 #[rstest]
@@ -17,7 +18,7 @@ async fn health_check_returns_200(#[future] client: TestClient) {
 #[rstest]
 #[awt]
 #[tokio::test]
-async fn subscribe_returns_200(#[future] client: TestClient, #[future] db: PgPool) {
+async fn subscribe_returns_200(#[future] client: TestClient) {
     let response = client
         .post(
             "/subscriptions",
@@ -27,10 +28,12 @@ async fn subscribe_returns_200(#[future] client: TestClient, #[future] db: PgPoo
 
     assert_status_code(200, response);
 
-    let saved = sqlx::query("SELECT email, name FROM subscriptions")
-        .fetch_one(&db)
+    let saved = sqlx::query!("SELECT email, name FROM subscriptions")
+        .fetch_one(&client.db)
         .await
         .expect("Failed to fetch saved subscription");
+    assert_eq!(saved.email, "ursula_le_guin@gmail.com");
+    assert_eq!(saved.name, "le guin");
 }
 
 #[rstest]
@@ -64,13 +67,15 @@ fn assert_status_code(expected: u16, response: reqwest::Response) {
 struct TestClient {
     address: String,
     client: reqwest::Client,
+    db: PgPool,
 }
 
 impl TestClient {
-    pub fn new(address: String) -> TestClient {
+    pub fn new(address: String, db: PgPool) -> TestClient {
         TestClient {
             address,
             client: reqwest::Client::new(),
+            db,
         }
     }
 
@@ -104,13 +109,30 @@ impl TestClient {
 
 #[fixture]
 async fn db() -> PgPool {
-    let configuration = configuration::get_configuration().expect("Failed to read configuration");
-    startup::create_db_pool(&configuration.database).await
+    let mut configuration =
+        configuration::get_configuration().expect("Failed to read configuration");
+    configuration.database.database = Uuid::new_v4().to_string();
+
+    let mut connection =
+        PgConnection::connect(&configuration.database.connection_string_without_db())
+            .await
+            .expect("Failed to connect to Postgres");
+    connection
+        .execute(format!(r#"CREATE DATABASE "{}";"#, configuration.database.database).as_str())
+        .await
+        .expect("Failed to create database.");
+
+    let db_pool = startup::create_db_pool(&configuration.database).await;
+    sqlx::migrate!("./migrations")
+        .run(&db_pool)
+        .await
+        .expect("Failed to migrate the database");
+    db_pool
 }
 
 #[fixture]
 #[awt]
 async fn client(#[future] db: PgPool) -> TestClient {
-    let address = start_server(db).await;
-    TestClient::new(address)
+    let address = start_server(db.clone()).await;
+    TestClient::new(address, db)
 }
