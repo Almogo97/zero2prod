@@ -1,2 +1,2 @@
 run:
-	cargo watch -x check -x test -x run
+	cargo watch -x run
