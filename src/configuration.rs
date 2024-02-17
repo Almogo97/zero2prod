@@ -15,14 +15,14 @@ pub struct DatabaseSettings {
     pub password: String,
     pub port: u16,
     pub host: String,
-    pub database: String,
+    pub name: String,
 }
 
 impl DatabaseSettings {
     pub fn connection_string(&self) -> String {
         format!(
             "postgres://{}:{}@{}:{}/{}",
-            self.username, self.password, self.host, self.port, self.database
+            self.username, self.password, self.host, self.port, self.name
         )
     }
 
@@ -34,9 +34,12 @@ impl DatabaseSettings {
     }
 }
 
-pub fn get_configuration() -> Result<Settings, config::ConfigError> {
+pub fn get_configuration() -> Settings {
     let config = config::Config::builder()
         .add_source(config::File::with_name("configuration"))
-        .build()?;
-    config.try_deserialize()
+        .build()
+        .unwrap();
+    config
+        .try_deserialize()
+        .expect("Failed to read configuration")
 }
