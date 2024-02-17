@@ -1,6 +1,11 @@
-use zero2prod::run;
+use zero2prod::configuration::get_configuration;
+use zero2prod::startup::{connect_db, create_app, serve, start_listener};
 
 #[tokio::main]
 async fn main() {
-    run("8000").await
+    let configuration = get_configuration();
+    let listener = start_listener(configuration.application.port).await;
+    let db = connect_db(&configuration.database).await;
+    let app = create_app(db);
+    serve(listener, app).await;
 }
