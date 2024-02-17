@@ -25,7 +25,7 @@ pub async fn subscribe(State(pool): State<PgPool>, Form(payload): Form<FormData>
     {
         Ok(_) => StatusCode::OK,
         Err(e) => {
-            println!("Failed to execute query: {}", e);
+            println!("Failed to execute query: {:?}", e);
             StatusCode::INTERNAL_SERVER_ERROR
         }
     }

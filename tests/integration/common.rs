@@ -3,8 +3,10 @@ use sqlx::{Connection, Executor, PgConnection, PgPool};
 use uuid::Uuid;
 use zero2prod::{configuration, startup};
 
+pub use self::assertions::assert_status_code;
 pub use self::test_client::TestClient;
 
+mod assertions;
 mod test_client;
 
 #[fixture]
@@ -45,8 +47,4 @@ async fn create_db(settings: &configuration::DatabaseSettings) {
         .execute(format!(r#"CREATE DATABASE "{}";"#, settings.name).as_str())
         .await
         .expect("Failed to create database.");
-}
-
-pub fn assert_status_code(expected: u16, response: reqwest::Response) {
-    assert_eq!(expected, response.status().as_u16());
 }
