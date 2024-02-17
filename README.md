@@ -49,3 +49,9 @@ So that I can notify them when new content is published.
 >As a subscriber,\
 I want to be able to unsubscribe from the newsletter,\
 So that I can stop receiving email updates from the blog.
+
+
+# FAQ
+
+## The reason behind the integration tests directory structure
+https://matklad.github.io/2021/02/27/delete-cargo-integration-tests.html
