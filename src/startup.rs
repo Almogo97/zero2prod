@@ -5,6 +5,8 @@ use axum::{
     Router,
 };
 use sqlx::{postgres::PgPoolOptions, PgPool};
+use tower_http::trace::TraceLayer;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::{configuration, routes};
 
@@ -13,6 +15,7 @@ pub fn create_app(db_pool: PgPool) -> Router {
         .route("/health", get(routes::status::health_check))
         .route("/subscriptions", post(routes::subscriptions::subscribe))
         .with_state(db_pool)
+        .layer(TraceLayer::new_for_http())
 }
 
 pub async fn start_listener(port: u16) -> tokio::net::TcpListener {
@@ -30,4 +33,17 @@ pub async fn connect_db(settings: &configuration::DatabaseSettings) -> sqlx::Poo
         .connect(&settings.connection_string())
         .await
         .expect("Failed to connect to Postgres")
+}
+
+pub fn initialize_logger() {
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
+                // axum logs rejections from built-in extractors with the `axum::rejection`
+                // target, at `TRACE` level. `axum::rejection=trace` enables showing those events
+                "example_tracing_aka_logging=debug,tower_http=debug,axum::rejection=trace".into()
+            }),
+        )
+        .with(tracing_subscriber::fmt::layer())
+        .init();
 }
