@@ -1,4 +1,7 @@
+use std::env;
+
 use rstest::*;
+use secrecy::ExposeSecret;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use uuid::Uuid;
 use zero2prod::{configuration, startup};
@@ -10,10 +13,20 @@ mod assertions;
 mod test_client;
 
 #[fixture]
-pub async fn client() -> TestClient {
+pub async fn client(_initialize_logger: ()) -> TestClient {
     let db = get_db().await;
     let address = start_server(db.clone()).await;
     TestClient::new(address, db)
+}
+
+#[fixture]
+#[once]
+fn initialize_logger() {
+    if env::var("RUST_LOG").is_err() {
+        // Remove log output unless RUST_LOG variable is set up in the environment
+        env::set_var("RUST_LOG", "")
+    }
+    startup::initialize_logger();
 }
 
 async fn start_server(db: PgPool) -> String {
@@ -40,9 +53,10 @@ async fn get_db() -> PgPool {
 }
 
 async fn create_db(settings: &configuration::DatabaseSettings) {
-    let mut connection = PgConnection::connect(&settings.connection_string_without_db())
-        .await
-        .expect("Failed to connect to Postgres");
+    let mut connection =
+        PgConnection::connect(&settings.connection_string_without_db().expose_secret())
+            .await
+            .expect("Failed to connect to Postgres");
     connection
         .execute(format!(r#"CREATE DATABASE "{}";"#, settings.name).as_str())
         .await

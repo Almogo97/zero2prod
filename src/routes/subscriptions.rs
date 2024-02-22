@@ -10,6 +10,11 @@ pub struct FormData {
 }
 
 pub async fn subscribe(State(pool): State<PgPool>, Form(payload): Form<FormData>) -> StatusCode {
+    tracing::info!(
+        "Registering new subscriber: {} [{}]",
+        payload.name,
+        payload.email
+    );
     match sqlx::query!(
         r#"
             INSERT INTO subscriptions (id, email, name, subscribed_at)
@@ -25,7 +30,7 @@ pub async fn subscribe(State(pool): State<PgPool>, Form(payload): Form<FormData>
     {
         Ok(_) => StatusCode::OK,
         Err(e) => {
-            println!("Failed to execute query: {:?}", e);
+            tracing::error!("Failed to execute query: {:?}", e);
             StatusCode::INTERNAL_SERVER_ERROR
         }
     }

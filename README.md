@@ -1,6 +1,9 @@
+[![codecov](https://codecov.io/gh/Almogo97/zero2prod/graph/badge.svg?token=BC6FUNEIYO)](https://codecov.io/gh/Almogo97/zero2prod)
+
 # Zero to Production in Rust
 
 Repo following the [book](https://www.zero2prod.com/index.html?country=Spain&discount_code=VAT20&country_code=ES) using [axum](https://github.com/tokio-rs/axum) insted of [actix-web](https://github.com/actix/actix-web) as web framework.
+
 
 # Installs
 
@@ -10,7 +13,7 @@ Hot reload
 cargo install cargo-watch
 ```
 
-Test coverage
+Test coverage. `RUST_LOG=trace` env variable is necessary to count log lines as covered. 
 
 ```bash
 cargo install tarpaulin
@@ -32,6 +35,12 @@ SQLx CLI
 
 ```bash
 cargo install sqlx-cli --no-default-features --features postgres
+```
+
+Transform logs from JSON to readable lines
+
+```bash
+cargo install bunyan
 ```
 
 # User stories
