@@ -1,3 +1,5 @@
+use std::env;
+
 use rstest::*;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use uuid::Uuid;
@@ -10,10 +12,20 @@ mod assertions;
 mod test_client;
 
 #[fixture]
-pub async fn client() -> TestClient {
+pub async fn client(_initialize_logger: ()) -> TestClient {
     let db = get_db().await;
     let address = start_server(db.clone()).await;
     TestClient::new(address, db)
+}
+
+#[fixture]
+#[once]
+fn initialize_logger() {
+    if env::var("RUST_LOG").is_err() {
+        // Remove log output unless RUST_LOG variable is set up in the environment
+        env::set_var("RUST_LOG", "")
+    }
+    startup::initialize_logger();
 }
 
 async fn start_server(db: PgPool) -> String {

@@ -34,6 +34,12 @@ SQLx CLI
 cargo install sqlx-cli --no-default-features --features postgres
 ```
 
+Transform logs from JSON to readable lines
+
+```bash
+cargo install bunyan
+```
+
 # User stories
 
 

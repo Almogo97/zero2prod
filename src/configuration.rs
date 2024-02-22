@@ -37,6 +37,11 @@ impl DatabaseSettings {
 pub fn get_configuration() -> Settings {
     let config = config::Config::builder()
         .add_source(config::File::with_name("configuration"))
+        .add_source(
+            config::Environment::with_prefix("Z2P")
+                .prefix_separator("_")
+                .separator("__"),
+        )
         .build()
         .unwrap();
     config

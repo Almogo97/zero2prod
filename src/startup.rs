@@ -1,11 +1,11 @@
-use std::time::Duration;
-
 use axum::{
     routing::{get, post},
     Router,
 };
 use sqlx::{postgres::PgPoolOptions, PgPool};
+use std::time::Duration;
 use tower_http::trace::TraceLayer;
+use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::{configuration, routes};
@@ -44,6 +44,10 @@ pub fn initialize_logger() {
                 "zero2prod=debug,tower_http=debug,axum::rejection=trace".into()
             }),
         )
-        .with(tracing_subscriber::fmt::layer())
+        .with(JsonStorageLayer)
+        .with(BunyanFormattingLayer::new(
+            "zero2prod".into(),
+            std::io::stdout,
+        ))
         .init();
 }
