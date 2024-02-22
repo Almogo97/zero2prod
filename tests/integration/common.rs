@@ -1,6 +1,7 @@
 use std::env;
 
 use rstest::*;
+use secrecy::ExposeSecret;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use uuid::Uuid;
 use zero2prod::{configuration, startup};
@@ -52,9 +53,10 @@ async fn get_db() -> PgPool {
 }
 
 async fn create_db(settings: &configuration::DatabaseSettings) {
-    let mut connection = PgConnection::connect(&settings.connection_string_without_db())
-        .await
-        .expect("Failed to connect to Postgres");
+    let mut connection =
+        PgConnection::connect(&settings.connection_string_without_db().expose_secret())
+            .await
+            .expect("Failed to connect to Postgres");
     connection
         .execute(format!(r#"CREATE DATABASE "{}";"#, settings.name).as_str())
         .await

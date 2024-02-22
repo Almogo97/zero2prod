@@ -2,6 +2,7 @@ use axum::{
     routing::{get, post},
     Router,
 };
+use secrecy::ExposeSecret;
 use sqlx::{postgres::PgPoolOptions, PgPool};
 use std::time::Duration;
 use tower_http::trace::TraceLayer;
@@ -30,7 +31,7 @@ pub async fn serve(listener: tokio::net::TcpListener, app: Router) {
 pub async fn connect_db(settings: &configuration::DatabaseSettings) -> sqlx::Pool<sqlx::Postgres> {
     PgPoolOptions::new()
         .acquire_timeout(Duration::from_secs(3))
-        .connect(&settings.connection_string())
+        .connect(&settings.connection_string().expose_secret())
         .await
         .expect("Failed to connect to Postgres")
 }
