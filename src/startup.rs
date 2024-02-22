@@ -55,6 +55,7 @@ pub async fn connect_db(settings: &configuration::DatabaseSettings) -> sqlx::Poo
         .expect("Failed to connect to Postgres")
 }
 
+#[cfg(not(tarpaulin_include))]
 pub fn initialize_logger() {
     tracing_subscriber::registry()
         .with(
