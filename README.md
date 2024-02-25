@@ -84,7 +84,7 @@ Had to rename the project because the name 'zero2prod' was already taken. Which 
 
 Must have `SQLX_OFFLINE=true` in *.cargo/config.toml*
 
-Must run `cargo sqlx prepare -- --tests` for it to prepare both main app queries and test queries. Actually deploy without running the tests because it will fail when it doesn't find a db to run tets, also how would that even work, does it maintain the same db for production?
+Must run `cargo sqlx prepare -- --tests` for it to prepare both main app queries and test queries. Actually deploy without running the tests `cargo shuttle deploy --no-test` because it will fail when it doesn't find a db to run tets, also how would that even work, does it maintain the same db for production?
 
 Now you have to `SQLX_OFFLINE=false` whenever we want to use a live connection with our database. Which may kinda be a bummer, but also ensures we don't forget to run the prepare command before deploying to production... So not so bad I guess, kinda good actually.
 
