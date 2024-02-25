@@ -2,7 +2,7 @@
 name = "zero2production"
 version = "0.1.0"
 edition = "2021"
-default-run = "main"
+default-run = "zero2prod"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -17,7 +17,7 @@ name = "zero2prod"
 # We can only have one library in a project, but we can have multiple binaries!
 [[bin]]
 path = "src/main.rs"
-name = "main"
+name = "zero2prod"
 
 [[bin]]
 path = "src/shuttle.rs"
