@@ -1,7 +1,8 @@
 [package]
-name = "zero2prod"
+name = "zero2production"
 version = "0.1.0"
 edition = "2021"
+default-run = "main"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -10,14 +11,17 @@ edition = "2021"
 # We could specify a library name using the `name` field. If unspecified,
 # cargo will default to `package.name`, which is what we want.
 path = "src/lib.rs"
+name = "zero2prod"
 
 # Notice the double square brackets: it's an array in TOML's syntax.
 # We can only have one library in a project, but we can have multiple binaries!
-# If you want to manage multiple libraries in the same repository
-# have a look at the workspace feature - we'll cover it later on.
 [[bin]]
 path = "src/main.rs"
-name = "zero2prod"
+name = "main"
+
+[[bin]]
+path = "src/shuttle.rs"
+name = "zero2production"
 
 [dependencies]
 axum = { version = "0.7.4", features = ["tracing"] }
@@ -26,6 +30,9 @@ config = "0.14.0"
 rstest = "0.18.2"
 secrecy = { version = "0.8.0", features = ["serde"] }
 serde = { version = "1.0.196", features = ["derive"] }
+shuttle-axum = "0.39.0"
+shuttle-runtime = "0.39.0"
+shuttle-shared-db = { version = "0.39.0", features = ["postgres", "sqlx"] }
 sqlx = { version = "0.7.3", features = [
     "runtime-tokio",
     "tls-rustls",

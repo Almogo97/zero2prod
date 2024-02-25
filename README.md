@@ -2,10 +2,17 @@
 
 # Zero to Production in Rust
 
-Repo following the [book](https://www.zero2prod.com/index.html?country=Spain&discount_code=VAT20&country_code=ES) using [axum](https://github.com/tokio-rs/axum) insted of [actix-web](https://github.com/actix/actix-web) as web framework.
+Repo following the book [Zero to Production in Rust](https://www.zero2prod.com/index.html?country=Spain&discount_code=VAT20&country_code=ES).
+
+There are some minor and major differences with the book. Minor differences include some code organization and small decisions. While the major differences are:
+
+1. Use of [axum](https://github.com/tokio-rs/axum) instead of [actix-web](https://github.com/actix/actix-web) as web framework. Because it looks like the new shiny better framework.
+2. Deploy to [shuttle.rs](https://www.shuttle.rs/) instead of [digitalocean](https://www.digitalocean.com/). Because it is free.
 
 
 # Installs
+
+Consider using [cargo-binstall](https://github.com/cargo-bins/cargo-binstall) to install the following packages with `cargo binstall <package-name>` instead of `cargo install <package-name>`
 
 Hot reload
 
@@ -43,6 +50,12 @@ Transform logs from JSON to readable lines
 cargo install bunyan
 ```
 
+Deploy app to [shuttle.rs](https://www.shuttle.rs/)
+
+```bash
+cargo install cargo-shuttle
+```
+
 # User stories
 
 
@@ -64,3 +77,15 @@ So that I can stop receiving email updates from the blog.
 
 ## The reason behind the integration tests directory structure
 https://matklad.github.io/2021/02/27/delete-cargo-integration-tests.html
+
+## Deploying to Shuttle.rs
+
+Had to rename the project because the name 'zero2prod' was already taken. Which sucks. Thank god I was able to maintain the library name.
+
+Must have `SQLX_OFFLINE=true` in *.cargo/config.toml*
+
+Must run `cargo sqlx prepare -- --tests` for it to prepare both main app queries and test queries. Actually deploy without running the tests because it will fail when it doesn't find a db to run tets, also how would that even work, does it maintain the same db for production?
+
+Now you have to `SQLX_OFFLINE=false` whenever we want to use a live connection with our database. Which may kinda be a bummer, but also ensures we don't forget to run the prepare command before deploying to production... So not so bad I guess, kinda good actually.
+
+cargo shuttle deploy --no-test
