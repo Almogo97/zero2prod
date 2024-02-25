@@ -6,3 +6,6 @@ test-with-logs:
 
 cov:
 	RUST_LOG=trace cargo tarpaulin
+
+deploy:
+	cargo shuttle deploy --no-test
