@@ -1,15 +1,14 @@
-use axum::{extract::State, http::StatusCode, Form};
+use axum::{extract::State, http::StatusCode};
 use chrono::Utc;
 use sqlx::PgPool;
 use uuid::Uuid;
 
-#[derive(serde::Deserialize)]
-pub struct FormData {
-    email: String,
-    name: String,
-}
+use crate::{domain::NewSubscriber, validators::ValidatedForm};
 
-pub async fn subscribe(State(pool): State<PgPool>, Form(payload): Form<FormData>) -> StatusCode {
+pub async fn subscribe(
+    State(pool): State<PgPool>,
+    ValidatedForm(payload): ValidatedForm<NewSubscriber>,
+) -> StatusCode {
     tracing::info!(
         "Registering new subscriber: {} [{}]",
         payload.name,

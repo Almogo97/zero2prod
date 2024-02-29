@@ -36,7 +36,7 @@ async fn subscribe_returns_422_when_missing_data(
 ) {
     let response = client.post("/subscriptions", body).await;
 
-    assert_status_code(422, response);
+    assert_status_code(400, response);
 }
 
 #[rstest]
@@ -62,4 +62,19 @@ async fn subscribe_returns_500_when_email_duplicated(#[future] client: TestClien
     let response = client.post("/subscriptions", body).await;
 
     assert_status_code(500, response);
+}
+
+#[rstest]
+#[case::empty_name("name=&email=ursula_le_guin%40gmail.com")]
+#[case::empty_email("name=Ursula%20gu&email=")]
+#[case::invalid_email("name=Ursula&email=definitely-not-an-email")]
+#[awt]
+#[tokio::test]
+async fn subscribe_returns_400_when_invalid_fields(
+    #[future] client: TestClient,
+    #[case] body: String,
+) {
+    let response = client.post("/subscriptions", body).await;
+
+    assert_status_code(400, response);
 }
